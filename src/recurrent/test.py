@@ -77,19 +77,19 @@ class ParseTest(unittest.TestCase):
         string = 'every day'
         date = RecurringEvent()
         ret = date.parse(string)
-        self.assertTrue(ret)
+        self.assertTrue(isinstance(ret, str))
 
     def test_return_non_recurring(self):
         string = 'march 3rd, 2001'
         date = RecurringEvent()
         ret = date.parse(string)
-        self.assertFalse(ret)
+        self.assertTrue(isinstance(ret, datetime.datetime))
 
     def test_return_non_recurring2(self):
         string = 'next wednesday'
         date = RecurringEvent()
         ret = date.parse(string)
-        self.assertFalse(ret)
+        self.assertTrue(isinstance(ret, datetime.datetime))
 
     def test_return_non_date(self):
         string = 'remember to call mitchell'

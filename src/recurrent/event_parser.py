@@ -7,7 +7,7 @@ pdt = parsedatetime.Calendar()
 from constants import *
 
 log = logging.getLogger('recurrent')
-log.setLevel(logging.CRITICAL)
+#log.setLevel(logging.DEBUG)
 
 RE_START = r'(start(?:s|ing)?)\s(?P<starting>.*)'
 RE_EVENT = r'(?P<event>(?:every|each|\bon\b|repeat|%s|%s)(?:s|ing)?(.*))'%(
@@ -134,13 +134,21 @@ class RecurringEvent(object):
         return rrule + ';'.join(rules)
 
     def parse(self, s):
+        # returns a rrule string if it is a recurring date, a datetime.datetime
+        # if it is a non-recurring date, and none if it is neither.
         if not s:
             return False
         s = normalize(s)
         event = self.parse_start_and_end(s)
         if not event:
             return False
-        return self.parse_event(event)
+        self.is_recurring = self.parse_event(event)
+        if self.is_recurring:
+            return self.get_RFC_rrule()
+        date = self.parse_date(s)
+        if date is not None:
+            return date
+        return None
 
     def parse_start_and_end(self, s):
         m = RE_START_EVENT.match(s)
@@ -272,10 +280,4 @@ class RecurringEvent(object):
             return True
         # No recurring match, return false
         return False
-
-if __name__ == '__main__':
-    r = RecurringEvent(datetime.datetime(2010, 1, 1))
-    print r.parse_date('march 3rd')
-    r.parse('daily starting march 3rd')
-    print r.get_RFC_rrule()
 

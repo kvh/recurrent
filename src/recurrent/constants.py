@@ -81,7 +81,6 @@ def get_number(s):
     except ValueError:
         return numbers.index(s)
 
-
 def get_ordinal_index(s):
     try:
         return int(s[:-2])
