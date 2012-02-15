@@ -56,7 +56,9 @@ expressions = [
 
 
         # TODO
-        ('saturday through tuesday', dict(freq='daily', interval=1, byday='SA,SU,MO,TU')),
+        #('saturday through tuesday', dict(freq='daily', interval=1, byday='SA,SU,MO,TU')),
+        #('every thursday for the next three weeks', dict(freq='weekly',
+        #    interval=1, count=3, byday='TH')),
 
         # non-recurring
         ('march 3rd', {}),

@@ -76,7 +76,9 @@ class RecurringEvent(object):
         if now_date is None:
             now_date = datetime.datetime.now()
         self.now_date = now_date
+        self._reset()
 
+    def _reset(self):
         # rrule params
         self.dtstart = None
         self.until = None
@@ -136,6 +138,7 @@ class RecurringEvent(object):
     def parse(self, s):
         # returns a rrule string if it is a recurring date, a datetime.datetime
         # if it is a non-recurring date, and none if it is neither.
+        self._reset()
         if not s:
             return False
         s = normalize(s)
