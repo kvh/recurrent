@@ -254,7 +254,7 @@ class RecurringEvent(object):
 
                     if index + 1 < len(tokens) and tokens.types[index + 1] == 'DoW':
                         # "first wednesday of/in ..."
-                        dow = get_DoW(tokens[index + 1].text)
+                        dow = get_DoW(tokens[index + 1].text)[0]
                         self.ordinal_weekdays.extend( ['%s%s' % (i, dow) for i in ords] )
                         index += 1
                         if index >= len(tokens): break
@@ -270,7 +270,7 @@ class RecurringEvent(object):
                 elif tokens.types[index] == 'DoW':
                     if not self.freq:
                         self.freq = 'weekly'
-                    self.weekdays.append(get_DoW(tokens[index].text))
+                    self.weekdays.extend(get_DoW(tokens[index].text))
                 elif tokens.types[index] == 'MoY':
                     if not self.freq:
                         self.freq = 'yearly'

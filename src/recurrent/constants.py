@@ -7,14 +7,17 @@ DoWs = (
     r'(th(urs|ers)day)|(thur?s?)',
     r'fri(day)?',
     r'sat([ue]rday)?',
-    r'sun(day)?'
+    r'sun(day)?',
+    r'weekday',
+    r'weekend'
 )
 RE_DOWS = [re.compile(r) for r in DoWs]
 RE_PLURAL_DOW = re.compile('|'.join( ['mondays', 'tuesdays', 'wednesdays',
     'thursdays', 'fridays', 'saturdays', 'sundays']))
 RE_DOW = re.compile('(' + ')|('.join(DoWs) + ')')
 RE_PLURAL_WEEKDAY = re.compile('weekdays|weekends|%s'%RE_PLURAL_DOW.pattern)
-weekday_codes = [ 'MO','TU','WE','TH','FR', 'SA', 'SU']
+weekday_codes = [ 'MO','TU','WE','TH','FR', 'SA', 'SU', 'MO,TU,WE,TH,FR',
+'SA,SU']
 
 MoYs = (
     r'jan(uary)?',
@@ -94,7 +97,7 @@ def get_ordinal_index(s):
 def get_DoW(s):
     for i, dow in enumerate(RE_DOWS):
         if dow.search(s):
-            return weekday_codes[i]
+            return weekday_codes[i].split(',')
     raise ValueError
 
 def get_MoY(s):
