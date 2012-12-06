@@ -33,8 +33,8 @@ MoYs = (
     r'nov(ember)?',
     r'dec(ember)?',
 )
-RE_MOYS = [re.compile(r) for r in MoYs]
-RE_MOY = re.compile('(' + ')|('.join(MoYs) + ')')
+RE_MOYS = [re.compile(r + '$') for r in MoYs]
+RE_MOY = re.compile('(' + ')$|('.join(MoYs) + ')$')
 
 units = ['day', 'week', 'month', 'year']
 units_freq = ['daily', 'weekly', 'monthly', 'yearly']
@@ -52,8 +52,8 @@ ordinals = (
     r'ninth',
     r'tenth',
     )
-RE_ORDINALS = [re.compile(r) for r in ordinals]
-RE_ORDINAL = re.compile(r'\d+(st|nd|rd|th)|' + '|'.join(ordinals))
+RE_ORDINALS = [re.compile(r + '$') for r in ordinals]
+RE_ORDINAL = re.compile(r'\d+(st|nd|rd|th)$|' + '$|'.join(ordinals))
 numbers = (
     r'zero',
     r'one',
@@ -67,12 +67,12 @@ numbers = (
     r'nine',
     r'ten',
     )
-RE_NUMBERS = [re.compile(r) for r in numbers]
-RE_NUMBER = re.compile('(' + ')|('.join(numbers) + '$)|(\d+$)')
+RE_NUMBERS = [re.compile(r + '$') for r in numbers]
+RE_NUMBER = re.compile('(' + '|'.join(numbers) + ')$|(\d+)$')
 
-RE_EVERY = re.compile(r'every|each|once')
+RE_EVERY = re.compile(r'(every|each|once)$')
 
-RE_THROUGH = re.compile(r'through|thru')
+RE_THROUGH = re.compile(r'(through|thru)$')
 
 RE_DAILY = re.compile(r'daily|everyday')
 RE_RECURRING_UNIT = re.compile(r'weekly|monthly|yearly')

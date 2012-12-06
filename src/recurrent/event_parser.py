@@ -9,15 +9,24 @@ from constants import *
 log = logging.getLogger('recurrent')
 #log.setLevel(logging.DEBUG)
 
-RE_START = r'(start(?:s|ing)?)\s(?P<starting>.*)'
+RE_TIME = re.compile(r'(?P<hour>\d{1,2}):?(?P<minute>\d{2})?\s?(?P<mod>am|pm)?(oclock)?')
+RE_AT_TIME = re.compile(r'at\s%s' % RE_TIME.pattern)
+RE_AT_TIME_END = re.compile(r'at\s%s$' % RE_TIME.pattern)
+RE_STARTING = re.compile(r'start(?:s|ing)?')
+RE_ENDING = re.compile(r'(?:\bend|until)(?:s|ing)?')
+RE_REPEAT = re.compile(r'(?:every|each|\bon\b|repeat(s|ing)?)')
+RE_START = r'(%s)\s(?P<starting>.*)' % RE_STARTING.pattern
 RE_EVENT = r'(?P<event>(?:every|each|\bon\b|repeat|%s|%s)(?:s|ing)?(.*))'%(
         RE_DAILY.pattern, RE_PLURAL_WEEKDAY.pattern)
-RE_END = r'(?:\bend|until)(?:s|ing)?(?P<ending>.*)'
-RE_START_EVENT = re.compile(r'^%s\s%s' % (RE_START, RE_EVENT))
-RE_EVENT_START = re.compile(r'^%s\s%s' % (RE_EVENT, RE_START))
-RE_FROM_TO = re.compile(r'^(?P<event>.*)from(?P<starting>.*)(to|through|thru)(?P<ending>.*)')
-RE_START_END = re.compile(r'^%s\s%s' % (RE_START, RE_END))
-RE_OTHER_END = re.compile(r'^(?P<other>.*)\s%s' % RE_END)
+RE_END = r'%s(?P<ending>.*)' % RE_ENDING.pattern
+RE_START_EVENT = re.compile(r'%s\s%s' % (RE_START, RE_EVENT))
+RE_EVENT_START = re.compile(r'%s\s%s' % (RE_EVENT, RE_START))
+RE_FROM_TO = re.compile(r'(?P<event>.*)from(?P<starting>.*)(to|through|thru)(?P<ending>.*)')
+RE_START_END = re.compile(r'%s\s%s' % (RE_START, RE_END))
+RE_OTHER_END = re.compile(r'(?P<other>.*)\s%s' % RE_END)
+RE_SEP = re.compile(r'(from|to|through|thru|on|at|of|in|a|an|the|and|or|both)$')
+RE_AMBIGMOD = re.compile(r'(this|next|last)$')
+RE_OTHER = re.compile(r'other|alternate')
 
 
 def normalize(s):
@@ -37,7 +46,7 @@ class Token(object):
 
 
 class Tokenizer(list):
-    TYPES = (
+    CONTENT_TYPES = (
             ('daily', RE_DAILY),
             ('every', RE_EVERY),
             ('through', RE_THROUGH),
@@ -47,7 +56,16 @@ class Tokenizer(list):
             ('number', RE_NUMBER),
             ('plural_weekday', RE_PLURAL_WEEKDAY),
             ('DoW', RE_DOW),
-            ('MoY', RE_MOY),
+            ('MoY', RE_MOY)
+            )
+    TYPES = CONTENT_TYPES + (
+            ('ambigmod', RE_AMBIGMOD),
+            ('starting', RE_STARTING),
+            ('ending', RE_ENDING),
+            ('repeat', RE_REPEAT),
+            ('sep', RE_SEP),
+            ('time', RE_TIME),
+            ('other', RE_OTHER),
         )
 
     def __init__(self, text):
@@ -55,13 +73,33 @@ class Tokenizer(list):
         self.text = text
         s = self.text
         self._index = 0
+        self.all_ = []
         for token in s.split():
             for type_, regex in self.TYPES:
                 m = regex.match(token)
                 if m:
-                    self.append(Token(token, s, type_))
+                    tok = Token(token, s, type_)
+                    self.append(tok)
+                    self.all_.append(tok)
                     break
+            else:
+                self.all_.append(Token(token, s, None))
         log.debug("tokenized '%s'\n%s" %(self.text, self))
+
+    def largest_contiguous_substring(self):
+        ls = 0
+        s = 0
+        l = 0
+        for i, t in enumerate(self.all_ + [Token('', '', None)]):
+            if t.type_ == None:
+                if i - s > l:
+                    # accept only if some non-filler tokens exist
+                    if sum([t.type_ in ('sep', 'starting', 'ending', 'ambigmod', 'repeat') for t in self.all_[s:i]]
+                            ) < i - s:
+                        l = i - s
+                        ls = s
+                s = i + 1
+        return self.all_[ls:ls+l]
 
     @property
     def types(self):
@@ -72,10 +110,11 @@ class Tokenizer(list):
 
 
 class RecurringEvent(object):
-    def __init__(self, now_date=None):
+    def __init__(self, now_date=None, preferred_time_range=(8, 19)):
         if now_date is None:
             now_date = datetime.datetime.now()
         self.now_date = now_date
+        self.preferred_time_range = preferred_time_range
         self._reset()
 
     def _reset(self):
@@ -90,6 +129,8 @@ class RecurringEvent(object):
         self.bymonthday = []
         self.byyearday = []
         self.bymonth = []
+        self.byhour = []
+        self.byminute = []
 
         # not supported currently
         self.count = None
@@ -111,6 +152,10 @@ class RecurringEvent(object):
             params['byyearday'] = ','.join(self.byyearday)
         if self.bymonth:
             params['bymonth'] = ','.join(self.bymonth)
+        if self.byhour:
+            params['byhour'] = ','.join(self.byhour)
+        if self.byminute:
+            params['byminute'] = ','.join(self.byminute)
         if self.interval is not None:
             params['interval'] = self.interval
         if self.freq is not None:
@@ -142,30 +187,63 @@ class RecurringEvent(object):
         if not s:
             return False
         s = normalize(s)
+        #self.tokens = Tokenizer(s)
+        #toks = self.tokens.largest_contiguous_substring()
+        #s = ' '.join([t.text for t in toks])
+        #log.debug("Event substring: %s" % s)
         event = self.parse_start_and_end(s)
         if not event:
             return False
         self.is_recurring = self.parse_event(event)
         if self.is_recurring:
+            # get time if its obvious
+            m = RE_AT_TIME.search(s)
+            if m:
+                self.byhour.append(str(self.get_hour(m.group('hour'), m.group('mod'))))
+                self.byminute.append(str(m.group('minute')))
             return self.get_RFC_rrule()
         date = self.parse_date(s)
         if date is not None:
+            date, found = self.parse_time(s, date)
+            return date
+        # maybe we have a simple time expression
+        date, found = self.parse_time(s, self.now_date)
+        if found:
             return date
         return None
 
+    def parse_time(self, s, dt):
+        m = RE_AT_TIME.search(s)
+        if m:
+            hr = self.get_hour(m.group('hour'), m.group('mod'))
+            mn = m.group('minute')
+            try:
+                mn = int(mn)
+            except (TypeError, ValueError):
+                mn = None
+            try:
+                hr = int(hr)
+            except (TypeError, ValueError):
+                hr = None
+            if hr is not None:
+                if mn is not None:
+                    return dt.replace(hour=hr, minute=mn), True
+                return dt.replace(hour=hr), True
+        return dt, False
+
     def parse_start_and_end(self, s):
-        m = RE_START_EVENT.match(s)
+        m = RE_START_EVENT.search(s)
         if m:
             event = self.extract_ending(m.group('event'))
             self.dtstart = self.parse_date(m.group('starting'))
             return event
-        m = RE_EVENT_START.match(s)
+        m = RE_EVENT_START.search(s)
         if m:
             event = m.group('event')
             start = self.extract_ending(m.group('starting'))
             self.dtstart = self.parse_date(start)
             return event
-        m = RE_FROM_TO.match(s)
+        m = RE_FROM_TO.search(s)
         if m:
             event = m.group('event')
             self.dtstart = self.parse_date(m.group('starting'))
@@ -175,7 +253,7 @@ class RecurringEvent(object):
         return self.extract_ending(s)
 
     def extract_ending(self, s):
-        m = RE_OTHER_END.match(s)
+        m = RE_OTHER_END.search(s)
         if m:
             self.until = self.parse_date(m.group('ending'))
             return m.group('other')
@@ -191,15 +269,19 @@ class RecurringEvent(object):
 
     def parse_event(self, s):
         tokens = Tokenizer(s)
+        tokens = [t for t in tokens if t.type_ in map(lambda x: x[0], Tokenizer.CONTENT_TYPES) ]
+        if not tokens:
+            return False
+        types = set([t.type_ for t in tokens])
 
         # daily
-        if 'daily' in tokens.types_set():
+        if 'daily' in types:
             self.interval = 1
             self.freq = 'daily'
             return True
 
         # explicit weekdays
-        if 'plural_weekday' in tokens.types_set():
+        if 'plural_weekday' in types:
             if 'weekdays' in s:
                 # "RRULE:FREQ=WEEKLY;WKST=MO;BYDAY=MO,TU,WE,TH,FR"
                 self.interval = 1
@@ -224,13 +306,13 @@ class RecurringEvent(object):
             return True
 
         # recurring phrases
-        if 'every' in tokens.types_set() or 'recurring_unit' in tokens.types_set():
+        if 'every' in types or 'recurring_unit' in types:
             if 'every other' in s:
                 self.interval = 2
             else:
                 self.interval = 1
-            if 'every' in tokens.types_set():
-                i = tokens.types.index('every')
+            if 'every' in types:
+                i = ([t.type_ for t in tokens]).index('every')
                 del tokens[i]
 
             index = 0
@@ -248,17 +330,17 @@ class RecurringEvent(object):
 
                     # grab all iterated ordinals (e.g. 1st, 3rd and 4th of
                     # november)
-                    while index + 1 < len(tokens) and tokens.types[index + 1] == 'ordinal':
+                    while index + 1 < len(tokens) and tokens[index + 1].type_ == 'ordinal':
                         ords.append(get_ordinal_index(tokens[index + 1].text))
                         index += 1
 
-                    if index + 1 < len(tokens) and tokens.types[index + 1] == 'DoW':
+                    if index + 1 < len(tokens) and tokens[index + 1].type_ == 'DoW':
                         # "first wednesday of/in ..."
                         dow = get_DoW(tokens[index + 1].text)[0]
                         self.ordinal_weekdays.extend( ['%s%s' % (i, dow) for i in ords] )
                         index += 1
                         if index >= len(tokens): break
-                    elif index + 1 < len(tokens) and tokens.types[index + 1] == 'unit':
+                    elif index + 1 < len(tokens) and tokens[index + 1].type_ == 'unit':
                         # "first of the month/year"
                         self.freq = get_unit_freq(tokens[index + 1].text)
                         if self.freq == 'monthly':
@@ -267,11 +349,11 @@ class RecurringEvent(object):
                             self.byyearday.extend([str(i) for i in ords])
                         index += 1
                         if index >= len(tokens): break
-                elif tokens.types[index] == 'DoW':
+                elif tokens[index].type_ == 'DoW':
                     if not self.freq:
                         self.freq = 'weekly'
                     self.weekdays.extend(get_DoW(tokens[index].text))
-                elif tokens.types[index] == 'MoY':
+                elif tokens[index].type_ == 'MoY':
                     if not self.freq:
                         self.freq = 'yearly'
                     self.bymonth.append(str(get_MoY(tokens[index].text)))
@@ -284,3 +366,15 @@ class RecurringEvent(object):
         # No recurring match, return false
         return False
 
+    def get_hour(self, hr, mod):
+        hr = int(hr)
+        if mod is not None:
+            if mod == 'pm':
+                return hr + 12
+            if hr == 12:
+                return 0
+            return hr
+        if hr > 12: return hr
+        if hr < self.preferred_time_range[0]:
+            return hr + 12
+        return hr

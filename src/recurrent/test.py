@@ -14,6 +14,7 @@ expressions = [
         ('tuesdays', dict(freq='weekly', interval=1, byday='TU')),
         ('weekends', dict(freq='weekly', interval=1, byday='SA,SU')),
         ('weekdays', dict(freq='weekly', interval=1, byday='MO,TU,WE,TH,FR')),
+        ('every weekday', dict(freq='weekly', interval=1, byday='MO,TU,WE,TH,FR')),
         ('tuesdays and thursdays', dict(freq='weekly', interval=1, byday='TU,TH')),
         ('weekly on wednesdays', dict(freq='weekly', interval=1, byday='WE')),
         ('weekly on wednesdays and fridays', dict(freq='weekly', interval=1, byday='WE,FR')),
@@ -61,17 +62,65 @@ expressions = [
         #    interval=1, count=3, byday='TH')),
 
         # non-recurring
-        ('march 3rd', {}),
-        ('tomorrow', {}),
-        ('wednesday, february 3rd', {}),
-        ('mar 2 2012', {}),
-        ('next sunday', {}),
+        ('march 3rd', datetime.datetime(NOW.year, 3, 3).date()),
+        ('tomorrow', datetime.datetime(NOW.year, NOW.month, NOW.day +
+            1).date()),
 
+        # pdt fucks this up, does feb 18 first, then adjusts thurs
+        ('thursday, february 18th', datetime.datetime(NOW.year, 2,
+            18).date()),
+        ('mar 2 2012', datetime.datetime(2012, 3, 2).date()),
+
+        # pdt fucks this up, assumes "this" sunday is "the one after this"
+        ('this sunday', (NOW + datetime.timedelta(days=(6 -
+                                NOW.weekday())%7)).date()),
 
         # non-dates
         ('not a date at all', dict(freq=None, interval=None, bymonthday=None)),
         ('cancel', dict(freq=None, interval=None, bymonthday=None)),
         ]
+
+time_expressions = [
+        ('march 3rd at 12:15am', datetime.datetime(NOW.year, 3, 3, 0, 15)),
+        ('tomorrow at 3:30', datetime.datetime(NOW.year, NOW.month, NOW.day +
+            1, 15, 30)),
+        ('in 30 minutes', NOW.replace(minute=NOW.minute + 30)),
+        ('at 4', NOW.replace(hour=16)),
+        ('2 hours from now', NOW.replace(hour=NOW.hour + 2)),
+
+        ('sunday at 2', (NOW + datetime.timedelta(days=(6 -
+            NOW.weekday())%7)).replace(hour=14)),
+]
+expressions += time_expressions
+
+ambiguous_expressions = (
+        ('weekly', dict(freq='weekly', interval=1)),
+        ('twice weekly', dict(freq='weekly', interval=1)),
+        ('three times a week', dict(freq='weekly', interval=1)),
+        ('monthly', dict(freq='monthly', interval=1)),
+        ('once a month', dict(freq='monthly', interval=1)),
+        ('yearly', dict(freq='yearly', interval=1)),
+        )
+
+non_dt_expressions = (
+        ('Once in a while.'),
+        ('Every time i hear that i apreciate it.'),
+        ('Once every ones in'),
+
+        # failing
+        # not sure what pdt does here
+        ('first time for everything. wait a minute'),
+        # parses as may
+        ('may this test pass.'),
+        )
+
+embedded_expressions = [('im available ' + s, v) for s,v in expressions] + [
+        (s + ' would work best for me', v) for s,v in expressions] + [
+        ('remind me to move car ' + s + ' would work best for me', v) for s,v in expressions]
+
+expressions += embedded_expressions
+expressions += [(e, None) for e in non_dt_expressions]
+
 
 class ParseTest(unittest.TestCase):
 
@@ -110,7 +159,22 @@ class ParseTest(unittest.TestCase):
 def test_expression(string, expected_params):
     def test_(self):
         date = RecurringEvent(NOW)
-        date.parse(string)
+        val = date.parse(string)
+        if expected_params is None:
+            self.assertTrue(val is None or date.get_params().keys() == ['interval'],
+                        "Non-date error: '%s' -> '%s', expected '%s'"%(
+                            string, val, expected_params))
+            return
+        if isinstance(expected_params, datetime.datetime) or isinstance(expected_params, datetime.date):
+            if isinstance(expected_params, datetime.datetime):
+                self.assertEqual(val, expected_params,
+                        "Date parse error: '%s' -> '%s', expected '%s'"%(
+                            string, val, expected_params))
+                return
+            self.assertEqual(val.date(), expected_params,
+                        "Date parse error: '%s' -> '%s', expected '%s'"%(
+                            string, val, expected_params))
+            return
         actual_params = date.get_params()
         for k, v in expected_params.items():
             av = actual_params.pop(k, None)
@@ -129,5 +193,5 @@ for i, expr in enumerate(expressions):
 
 
 if __name__ == '__main__':
+    print "Dates relative to %s" % NOW
     unittest.main(verbosity=2)
-
