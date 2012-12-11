@@ -200,7 +200,9 @@ class RecurringEvent(object):
             m = RE_AT_TIME.search(s)
             if m:
                 self.byhour.append(str(self.get_hour(m.group('hour'), m.group('mod'))))
-                self.byminute.append(str(m.group('minute')))
+                mn = m.group('minute')
+                if mn is not None:
+                    self.byminute.append(str(mn))
             return self.get_RFC_rrule()
         date = self.parse_date(s)
         if date is not None:
