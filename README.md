@@ -33,7 +33,6 @@ datetime.datetime(2010, 1, 5, 0, 0)
 datetime.datetime(2010, 1, 26, 0, 0)
 </pre>
 
-
 ## dependencies
 recurrent uses [parsedatetime][3] to parse dates. If you grab the pypi
 version of parsedatetime though, some tests in recurrent will fail due
@@ -51,7 +50,6 @@ issue, but if you need this functionality before it's patched you can grab
 Take a look at the tests for more.
 
 ## things it can't do
-Right now recurrent only works with dates, not times. Time functionality will be added soon.
 
 recurrent is regrettably quite U.S. (and completely english) centric. Contributions from other perspectives are welcome :)
 
