@@ -1,10 +1,27 @@
-# recurrent
-recurrent is a python library for natural language parsing of recurring
+# Recurrent
+Recurrent is a python library for natural language parsing of dates and recurring
 events. It turns strings like "every tuesday and thurs until next month"
 into [RFC-compliant RRULES][1], to be fed into a calendar api or [python-dateutil's][2]
 rrulestr.
 
-## usage
+## Examples
+### Date times
+* next tuesday
+* tomorrow
+* in an hour
+
+### Recurring events
+* on weekdays
+* every fourth of the month from jan 1 2010 to dec 25th 2020
+* each thurs until next month
+* once a year on the fourth thursday in november
+* tuesdays and thursdays at 3:15
+
+### Messy strings
+* Please schedule the meeting for every other tuesday at noon
+* Set an alarm for next tuesday at 11pm
+
+## Usage
 <pre>
 >>> import datetime
 >>> from recurrent import RecurringEvent
@@ -33,30 +50,26 @@ datetime.datetime(2010, 1, 5, 0, 0)
 datetime.datetime(2010, 1, 26, 0, 0)
 </pre>
 
-## dependencies
-recurrent uses [parsedatetime][3] to parse dates. If you grab the pypi
+## Dependencies
+Recurrent uses [parsedatetime][3] to parse dates. If you grab the pypi
 version of parsedatetime though, some tests in recurrent will fail due
 to a bug with manually setting the "now" time. For some use cases this won't be an
 issue, but if you need this functionality before it's patched you can grab
 [my fork][4] of parsedatetime.
 
-## examples
-* on weekdays
-* every fourth of the month from jan 1 2010 to dec 25th 2020
-* each thurs until next month
-* once a year on the fourth thursday in november
-* tuesdays and thursdays
-
 Take a look at the tests for more.
 
-## things it can't do
+## Things it can't do
 
-recurrent is regrettably quite U.S. (and completely english) centric. Contributions from other perspectives are welcome :)
+Recurrent is regrettably quite U.S. (and completely english) centric. Contributions from other perspectives are welcome :)
 
-## credits
-recurrent is inspired by the similar Ruby library Tickle by Joshua
+## Credits
+Recurrent is inspired by the similar Ruby library Tickle by Joshua
 Lippiner. It also uses the parsedatetime library for fuzzy human date
 parsing.
+
+## Author
+Ken Van Haren kvh@science.io
 
 [1]: http://www.kanzaki.com/docs/ical/rrule.html
 [2]: http://labix.org/python-dateutil
