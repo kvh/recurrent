@@ -22,7 +22,7 @@ rrulestr.
 * Set an alarm for next tuesday at 11pm
 
 ## Usage
-<pre>
+```python
 >>> import datetime
 >>> from recurrent import RecurringEvent
 >>> r = RecurringEvent(now_date=datetime.datetime(2010, 1, 1))
@@ -38,17 +38,17 @@ datetime.datetime(2010, 2, 2, 0, 0)
 
 >>> r.parse('not a date at all')
 >>>
-</pre>
+```
 
 You can then use python-dateutil to work with the recurrence rules.
-<pre>
+```python
 >>> from dateutil import rrule
 >>> rr = rrule.rrulestr(r.get_RFC_rrule())
 >>> rr.after(datetime.datetime(2010, 1, 2))
 datetime.datetime(2010, 1, 5, 0, 0)
 >>> rr.after(datetime.datetime(2010, 1, 25))
 datetime.datetime(2010, 1, 26, 0, 0)
-</pre>
+```
 
 ## Dependencies
 Recurrent uses [parsedatetime][3] to parse dates. If you grab the pypi
