@@ -55,6 +55,11 @@ expressions = [
                             until='%d0325'%NOW.year,
                             freq='weekly', interval=1, byday='MO,TH')),
 
+        # time recurrences
+        ('every 5 minutes', dict(freq='minutely', interval=5)),
+        ('every 30 seconds', dict(freq='secondly', interval=30)),
+        ('every other hour', dict(freq='hourly', interval=2)),
+
         # with times
         ('daily at 3pm', dict(freq='daily', interval=1, byhour='15', byminute='0')),
         ('daily at 3:00pm', dict(freq='daily', interval=1, byhour='15', byminute='0')),

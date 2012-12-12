@@ -36,8 +36,8 @@ MoYs = (
 RE_MOYS = [re.compile(r + '$') for r in MoYs]
 RE_MOY = re.compile('(' + ')$|('.join(MoYs) + ')$')
 
-units = ['day', 'week', 'month', 'year']
-units_freq = ['daily', 'weekly', 'monthly', 'yearly']
+units = ['day', 'week', 'month', 'year', 'hour', 'minute', 'seconds']
+units_freq = ['daily', 'weekly', 'monthly', 'yearly', 'hourly', 'minutely', 'secondly']
 RE_UNITS = re.compile(r'^(' + 's?|'.join(units) + '?)$')
 
 ordinals = (
