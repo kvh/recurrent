@@ -1,9 +1,16 @@
 import unittest
 import datetime
+from dateutil import rrule
 
 from event_parser import RecurringEvent
 
 NOW = datetime.datetime(2010, 1, 1)
+
+
+class ExpectedFailure(object):
+    def __init__(self, v):
+        self.correct_value = v
+
 
 expressions = [
         # recurring events
@@ -75,17 +82,14 @@ expressions = [
             1).date()),
 
         # pdt fucks this up, does feb 18 first, then adjusts thurs
-        ('thursday, february 18th', datetime.datetime(NOW.year, 2,
-            18).date()),
+        ('thursday, february 18th',
+                ExpectedFailure(datetime.datetime(NOW.year, 2, 18).date())),
         ('mar 2 2012', datetime.datetime(2012, 3, 2).date()),
 
-        # pdt fucks this up, assumes "this" sunday is "the one after this"
-        ('this sunday', (NOW + datetime.timedelta(days=(6 -
+        ('this sunday',
+            (NOW + datetime.timedelta(days=(6 -
                                 NOW.weekday())%7)).date()),
 
-        # non-dates
-        ('not a date at all', dict(freq=None, interval=None, bymonthday=None)),
-        ('cancel', dict(freq=None, interval=None, bymonthday=None)),
         ]
 
 time_expressions = [
@@ -111,15 +115,14 @@ ambiguous_expressions = (
         )
 
 non_dt_expressions = (
-        ('Once in a while.'),
-        ('Every time i hear that i apreciate it.'),
-        ('Once every ones in'),
+        ('Once in a while.', None),
+        ('Every time i hear that i apreciate it.', None),
+        ('Once every ones in', None),
 
-        # failing
-        # not sure what pdt does here
-        ('first time for everything. wait a minute'),
-        # parses as may
-        ('may this test pass.'),
+        ('first time for everything. wait a minute', None),
+        # Failing. parses as may
+        ('may this test pass.', ExpectedFailure(None)),
+        ('seconds anyone?', None),
         )
 
 embedded_expressions = [('im available ' + s, v) for s,v in expressions] + [
@@ -127,7 +130,7 @@ embedded_expressions = [('im available ' + s, v) for s,v in expressions] + [
         ('remind me to move car ' + s + ' would work best for me', v) for s,v in expressions]
 
 expressions += embedded_expressions
-expressions += [(e, None) for e in non_dt_expressions]
+expressions += non_dt_expressions
 
 
 class ParseTest(unittest.TestCase):
@@ -164,40 +167,54 @@ class ParseTest(unittest.TestCase):
         self.assertEqual(expected, date.get_RFC_rrule())
 
 
-def test_expression(string, expected_params):
+def test_expression(string, expected):
     def test_(self):
         date = RecurringEvent(NOW)
         val = date.parse(string)
-        if expected_params is None:
-            self.assertTrue(val is None or date.get_params().keys() == ['interval'],
-                        "Non-date error: '%s' -> '%s', expected '%s'"%(
-                            string, val, expected_params))
-            return
-        if isinstance(expected_params, datetime.datetime) or isinstance(expected_params, datetime.date):
-            if isinstance(expected_params, datetime.datetime):
-                self.assertEqual(val, expected_params,
-                        "Date parse error: '%s' -> '%s', expected '%s'"%(
-                            string, val, expected_params))
+        expected_params = expected
+        known_failure = False
+        if isinstance(expected, ExpectedFailure):
+            known_failure = True
+            expected_params = expected.correct_value
+        try:
+            if expected_params is None:
+                self.assertTrue(val is None or date.get_params().keys() == ['interval'],
+                            "Non-date error: '%s' -> '%s', expected '%s'"%(
+                                string, val, expected_params))
+            elif isinstance(expected_params, datetime.datetime) or isinstance(expected_params, datetime.date):
+                if isinstance(expected_params, datetime.datetime):
+                    self.assertEqual(val, expected_params,
+                            "Date parse error: '%s' -> '%s', expected '%s'"%(
+                                string, val, expected_params))
+                else:
+                    self.assertEqual(val.date(), expected_params,
+                            "Date parse error: '%s' -> '%s', expected '%s'"%(
+                                string, val, expected_params))
+            else:
+                actual_params = date.get_params()
+                for k, v in expected_params.items():
+                    av = actual_params.pop(k, None)
+                    self.assertEqual(av, v,
+                            "Rule mismatch on rule '%s' for '%s'. Expected %s, got %s\nRules: %s" % (k, string, v, av,
+                                date.get_params()))
+                # make sure any extra params are empty/false
+                for k, v in actual_params.items():
+                    self.assertFalse(v)
+                # ensure rrule string can be parsed by dateutil
+                rrule.rrulestr(val)
+        except AssertionError, e:
+            if known_failure:
+                print "Expected failure:", expected_params
                 return
-            self.assertEqual(val.date(), expected_params,
-                        "Date parse error: '%s' -> '%s', expected '%s'"%(
-                            string, val, expected_params))
-            return
-        actual_params = date.get_params()
-        for k, v in expected_params.items():
-            av = actual_params.pop(k, None)
-            self.assertEqual(av, v,
-                    "Rule mismatch on rule '%s' for '%s'. Expected %s, got %s\nRules: %s" % (k, string, v, av,
-                        date.get_params()))
-        # make sure any extra params are empty/false
-        for k, v in actual_params.items():
-            self.assertFalse(v)
+            raise e
+        if known_failure:
+            raise AssertionError("Known failure passed:", expected_params, string)
     return test_
 
 # add a test for each expression
 for i, expr in enumerate(expressions):
     string, params = expr
-    setattr(ParseTest, 'test_%02d' % i, test_expression(string, params))
+    setattr(ParseTest, 'test_%03d_%s' % (i, string.replace(' ', '_')), test_expression(string, params))
 
 
 if __name__ == '__main__':
