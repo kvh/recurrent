@@ -34,7 +34,7 @@ expressions = [
         ('first and third friday of each month', dict(freq='monthly', interval=1, byday='1FR,3FR')),
         ('yearly on the fourth thursday in november', dict(freq='yearly', interval=1,byday='4TH', bymonth='11')),
         ('every year on the fourth thursday in november', dict(freq='yearly', interval=1,byday='4TH', bymonth='11')),
-        ('once a year on december 25th', dict(freq='yearly', interval=1,byday='25', bymonth='12')),
+        ('once a year on december 25th', dict(freq='yearly', interval=1, bymonthday='25', bymonth='12')),
 
         # with start and end dates
         ('daily starting march 3rd',

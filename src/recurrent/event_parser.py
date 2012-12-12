@@ -357,16 +357,20 @@ class RecurringEvent(object):
                         index += 1
                         if index >= len(tokens): break
                 elif tokens[index].type_ == 'DoW':
+                    # if we have a day of week, we can assume the frequency is
+                    # weekly if it hasnt been set yet.
                     if not self.freq:
                         self.freq = 'weekly'
                     self.weekdays.extend(get_DoW(tokens[index].text))
                 elif tokens[index].type_ == 'MoY':
+                    # if we have a month we assume frequency is yearly
+                    # if it hasnt been set.
                     if not self.freq:
                         self.freq = 'yearly'
                     self.bymonth.append(str(get_MoY(tokens[index].text)))
                     #TODO: should iterate this ordinal as well...
                     if index + 1 < len(tokens) and tokens[index + 1].type_ == 'ordinal':
-                        self.ordinal_weekdays.append(str(get_ordinal_index(tokens[index
+                        self.bymonthday.append(str(get_ordinal_index(tokens[index
                             + 1].text)))
                 index += 1
             return True
