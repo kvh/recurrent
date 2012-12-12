@@ -201,8 +201,13 @@ class RecurringEvent(object):
             if m:
                 self.byhour.append(str(self.get_hour(m.group('hour'), m.group('mod'))))
                 mn = m.group('minute')
-                if mn is not None:
+                if mn is None:
+                    mn = 0
+                try:
+                    mn = int(mn)
                     self.byminute.append(str(mn))
+                except ValueError:
+                    pass
             return self.get_RFC_rrule()
         date = self.parse_date(s)
         if date is not None:

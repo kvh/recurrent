@@ -56,8 +56,8 @@ expressions = [
                             freq='weekly', interval=1, byday='MO,TH')),
 
         # with times
-        ('daily at 3pm', dict(freq='daily', interval=1, byhour='15')),
-        ('daily at 3:00pm', dict(freq='daily', interval=1, byhour='15', byminute='00')),
+        ('daily at 3pm', dict(freq='daily', interval=1, byhour='15', byminute='0')),
+        ('daily at 3:00pm', dict(freq='daily', interval=1, byhour='15', byminute='0')),
 
         # TODO
         #('saturday through tuesday', dict(freq='daily', interval=1, byday='SA,SU,MO,TU')),
