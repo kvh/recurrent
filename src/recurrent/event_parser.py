@@ -1,7 +1,7 @@
 import re
 import datetime
 import logging
-import parsedatetime
+from parsedatetime import parsedatetime
 pdt = parsedatetime.Calendar()
 
 from constants import *
