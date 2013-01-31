@@ -42,6 +42,7 @@ expressions = [
         ('yearly on the fourth thursday in november', dict(freq='yearly', interval=1,byday='4TH', bymonth='11')),
         ('every year on the fourth thursday in november', dict(freq='yearly', interval=1,byday='4TH', bymonth='11')),
         ('once a year on december 25th', dict(freq='yearly', interval=1, bymonthday='25', bymonth='12')),
+        ('every july 4th', dict(freq='yearly', interval=1, bymonthday='4', bymonth='7')),
 
         # with start and end dates
         ('daily starting march 3rd',
@@ -66,6 +67,8 @@ expressions = [
         ('every 5 minutes', dict(freq='minutely', interval=5)),
         ('every 30 seconds', dict(freq='secondly', interval=30)),
         ('every other hour', dict(freq='hourly', interval=2)),
+        ('every 2 hours', dict(freq='hourly', interval=2)),
+        ('every 20 min', ExpectedFailure(dict(freq='minutely', interval=20))),
 
         # with times
         ('daily at 3pm', dict(freq='daily', interval=1, byhour='15', byminute='0')),
@@ -80,15 +83,14 @@ expressions = [
         ('march 3rd', datetime.datetime(NOW.year, 3, 3).date()),
         ('tomorrow', datetime.datetime(NOW.year, NOW.month, NOW.day +
             1).date()),
+        ('mar 2 2012', datetime.datetime(2012, 3, 2).date()),
+        ('this sunday',
+            (NOW + datetime.timedelta(days=(6 -
+                                NOW.weekday())%7)).date()),
 
         # pdt fucks this up, does feb 18 first, then adjusts thurs
         ('thursday, february 18th',
                 ExpectedFailure(datetime.datetime(NOW.year, 2, 18).date())),
-        ('mar 2 2012', datetime.datetime(2012, 3, 2).date()),
-
-        ('this sunday',
-            (NOW + datetime.timedelta(days=(6 -
-                                NOW.weekday())%7)).date()),
 
         ]
 
