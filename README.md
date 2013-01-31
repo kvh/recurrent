@@ -4,6 +4,10 @@ events. It turns strings like "every tuesday and thurs until next month"
 into [RFC-compliant RRULES][1], to be fed into a calendar api or [python-dateutil's][2]
 rrulestr.
 
+```sh
+pip install recurrent
+```
+
 ## Examples
 ### Date times
 * next tuesday
@@ -22,7 +26,7 @@ rrulestr.
 * Set an alarm for next tuesday at 11pm
 
 ## Usage
-<pre>
+```python
 >>> import datetime
 >>> from recurrent import RecurringEvent
 >>> r = RecurringEvent(now_date=datetime.datetime(2010, 1, 1))
@@ -38,17 +42,17 @@ datetime.datetime(2010, 2, 2, 0, 0)
 
 >>> r.parse('not a date at all')
 >>>
-</pre>
+```
 
 You can then use python-dateutil to work with the recurrence rules.
-<pre>
+```python
 >>> from dateutil import rrule
 >>> rr = rrule.rrulestr(r.get_RFC_rrule())
 >>> rr.after(datetime.datetime(2010, 1, 2))
 datetime.datetime(2010, 1, 5, 0, 0)
 >>> rr.after(datetime.datetime(2010, 1, 25))
 datetime.datetime(2010, 1, 26, 0, 0)
-</pre>
+```
 
 ## Dependencies
 Recurrent uses [parsedatetime][3] to parse dates. If you grab the pypi
@@ -69,7 +73,7 @@ Lippiner. It also uses the parsedatetime library for fuzzy human date
 parsing.
 
 ## Author
-Ken Van Haren kvh@science.io
+Ken Van Haren kvh@science.io [@squaredloss](http://twitter.com/squaredloss)
 
 [1]: http://www.kanzaki.com/docs/ical/rrule.html
 [2]: http://labix.org/python-dateutil
