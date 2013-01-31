@@ -4,6 +4,10 @@ events. It turns strings like "every tuesday and thurs until next month"
 into [RFC-compliant RRULES][1], to be fed into a calendar api or [python-dateutil's][2]
 rrulestr.
 
+```sh
+pip install recurrent
+```
+
 ## Examples
 ### Date times
 * next tuesday
@@ -69,7 +73,7 @@ Lippiner. It also uses the parsedatetime library for fuzzy human date
 parsing.
 
 ## Author
-Ken Van Haren kvh@science.io
+Ken Van Haren kvh@science.io [@squaredloss](http://twitter.com/squaredloss)
 
 [1]: http://www.kanzaki.com/docs/ical/rrule.html
 [2]: http://labix.org/python-dateutil
