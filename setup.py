@@ -1,11 +1,11 @@
 from setuptools import setup, find_packages
 
-version = '0.2.0'
+version = '0.2.4'
 
 setup(name='recurrent',
       version=version,
       description="Natural language parsing of recurring events",
-      long_description=open("README.md").read(),
+      long_description="See http://github.com/kvh/recurrent",
       classifiers=[
           'Natural Language :: English',
           'Topic :: Text Processing :: Linguistic',
@@ -18,7 +18,6 @@ setup(name='recurrent',
       license='BSD',
       packages=find_packages('src'),
       package_dir={'': 'src'},
-      include_package_data=True,
       zip_safe=False,
       install_requires=[
           'parsedatetime',
