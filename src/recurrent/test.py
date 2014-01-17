@@ -169,7 +169,7 @@ class ParseTest(unittest.TestCase):
         self.assertEqual(expected, date.get_RFC_rrule())
 
 
-def test_expression(string, expected):
+def test_expression(funcname, string, expected):
     def test_(self):
         date = RecurringEvent(NOW)
         val = date.parse(string)
@@ -211,12 +211,14 @@ def test_expression(string, expected):
             raise e
         if known_failure:
             raise AssertionError("Known failure passed:", expected_params, string)
+    test_.__name__ = funcname
     return test_
 
 # add a test for each expression
 for i, expr in enumerate(expressions):
     string, params = expr
-    setattr(ParseTest, 'test_%03d_%s' % (i, string.replace(' ', '_')), test_expression(string, params))
+    methname = 'test_%03d_%s' % (i, string.replace(' ', '_'))
+    setattr(ParseTest, methname, test_expression(methname, string, params))
 
 
 if __name__ == '__main__':
