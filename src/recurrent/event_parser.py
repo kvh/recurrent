@@ -9,7 +9,7 @@ except ImportError:
 
 pdt = parsedatetime.Calendar()
 
-from constants import *
+from recurrent.constants import *
 
 log = logging.getLogger('recurrent')
 #log.setLevel(logging.DEBUG)
@@ -178,7 +178,7 @@ class RecurringEvent(object):
             rrule += 'DTSTART:%s\n' % params.pop('dtstart')
         rrule += "RRULE:"
         rules = []
-        for k, v in params.items():
+        for k, v in list(params.items()):
             if isinstance(v, str) or isinstance(v, int):
                 if isinstance(v, str):
                     v = v.upper()
@@ -281,7 +281,7 @@ class RecurringEvent(object):
 
     def parse_event(self, s):
         tokens = Tokenizer(s)
-        tokens = [t for t in tokens if t.type_ in map(lambda x: x[0], Tokenizer.CONTENT_TYPES) ]
+        tokens = [t for t in tokens if t.type_ in [x[0] for x in Tokenizer.CONTENT_TYPES] ]
         if not tokens:
             return False
         types = set([t.type_ for t in tokens])

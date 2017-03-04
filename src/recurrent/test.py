@@ -2,7 +2,7 @@ import unittest
 import datetime
 from dateutil import rrule
 
-from event_parser import RecurringEvent
+from recurrent.event_parser import RecurringEvent
 
 NOW = datetime.datetime(2010, 1, 1)
 
@@ -180,7 +180,7 @@ def test_expression(string, expected):
             expected_params = expected.correct_value
         try:
             if expected_params is None:
-                self.assertTrue(val is None or date.get_params().keys() == ['interval'],
+                self.assertTrue(val is None or list(date.get_params().keys()) == ['interval'],
                             "Non-date error: '%s' -> '%s', expected '%s'"%(
                                 string, val, expected_params))
             elif isinstance(expected_params, datetime.datetime) or isinstance(expected_params, datetime.date):
@@ -194,19 +194,19 @@ def test_expression(string, expected):
                                 string, val, expected_params))
             else:
                 actual_params = date.get_params()
-                for k, v in expected_params.items():
+                for k, v in list(expected_params.items()):
                     av = actual_params.pop(k, None)
                     self.assertEqual(av, v,
                             "Rule mismatch on rule '%s' for '%s'. Expected %s, got %s\nRules: %s" % (k, string, v, av,
                                 date.get_params()))
                 # make sure any extra params are empty/false
-                for k, v in actual_params.items():
+                for k, v in list(actual_params.items()):
                     self.assertFalse(v)
                 # ensure rrule string can be parsed by dateutil
                 rrule.rrulestr(val)
-        except AssertionError, e:
+        except AssertionError as e:
             if known_failure:
-                print "Expected failure:", expected_params
+                print("Expected failure:", expected_params)
                 return
             raise e
         if known_failure:
@@ -220,5 +220,5 @@ for i, expr in enumerate(expressions):
 
 
 if __name__ == '__main__':
-    print "Dates relative to %s" % NOW
+    print("Dates relative to %s" % NOW)
     unittest.main(verbosity=2)
