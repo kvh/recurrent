@@ -77,5 +77,5 @@ Ken Van Haren kvh@science.io [@squaredloss](http://twitter.com/squaredloss)
 
 [1]: http://www.kanzaki.com/docs/ical/rrule.html
 [2]: http://labix.org/python-dateutil
-[3]: http://code.google.com/p/parsedatetime
+[3]: https://github.com/bear/parsedatetime
 [4]: https://github.com/kvh/parsedatetime
