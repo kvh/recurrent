@@ -1,18 +1,14 @@
 import re
-import datetime
+from datetime import datetime
 import logging
-
-try:
-    from parsedatetime import parsedatetime
-except ImportError:
-    import parsedatetime
-
-pdt = parsedatetime.Calendar()
+from parsedatetime import Calendar
+from os import environ
 
 from recurrent.constants import *
 
+pdt = Calendar()
+
 log = logging.getLogger('recurrent')
-#log.setLevel(logging.DEBUG)
 
 RE_TIME = re.compile(r'(?P<hour>\d{1,2}):?(?P<minute>\d{2})?\s?(?P<mod>am|pm)?(oclock)?')
 RE_AT_TIME = re.compile(r'at\s%s' % RE_TIME.pattern)
@@ -115,11 +111,8 @@ class Tokenizer(list):
 
 
 class RecurringEvent(object):
-    def __init__(self, now_date=None, preferred_time_range=(8, 19)):
-        if now_date is None:
-            now_date = datetime.datetime.now()
+    def __init__(self, now_date=datetime.now()):
         self.now_date = now_date
-        self.preferred_time_range = preferred_time_range
         self._reset()
 
     def _reset(self):
@@ -185,17 +178,13 @@ class RecurringEvent(object):
                 rules.append( '%s=%s' % (k.upper(), v))
         return rrule + ';'.join(rules)
 
-    def parse(self, s):
-        # returns a rrule string if it is a recurring date, a datetime.datetime
+    def parse(self, s, zone='Etc/UTC'):
+        # returns a rrule string if it is a recurring date, a datetime
         # if it is a non-recurring date, and none if it is neither.
         self._reset()
+        environ['TZ'] = zone # set timezone
         if not s:
             return False
-        s = normalize(s)
-        #self.tokens = Tokenizer(s)
-        #toks = self.tokens.largest_contiguous_substring()
-        #s = ' '.join([t.text for t in toks])
-        #log.debug("Event substring: %s" % s)
         event = self.parse_start_and_end(s)
         if not event:
             return False
@@ -276,7 +265,7 @@ class RecurringEvent(object):
         if result:
             log.debug( "parsed date string '%s' to %s" %(date_string,
                     timestruct[:6]))
-            return datetime.datetime(*timestruct[:6])
+            return datetime(*timestruct[:6])
         return None
 
     def parse_event(self, s):
@@ -385,12 +374,8 @@ class RecurringEvent(object):
     def get_hour(self, hr, mod):
         hr = int(hr)
         if mod is not None:
-            if mod == 'pm':
+            if hr < 12 and mod == 'pm':
                 return hr + 12
-            if hr == 12:
+            if hr == 12 and mod == 'am':
                 return 0
-            return hr
-        if hr > 12: return hr
-        if hr < self.preferred_time_range[0]:
-            return hr + 12
         return hr
