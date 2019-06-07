@@ -318,19 +318,12 @@ class RecurringEvent(object):
 
             index = 0
             while index < len(tokens):
-                if tokens[index].type_ == 'number':
-                    # we assume a bare number always specifies the interval
-                    n = get_number(tokens[index].text)
-                    if n is not None:
-                        self.interval = n
-                elif tokens[index].type_ == 'unit':
+                if tokens[index].type_ == 'unit':
                     # we assume a bare unit (grow up...) always specifies the frequency
                     self.freq = get_unit_freq(tokens[index].text)
                 elif tokens[index].type_ == 'ordinal':
                     ords = [get_ordinal_index(tokens[index].text)]
-
-                    # grab all iterated ordinals (e.g. 1st, 3rd and 4th of
-                    # november)
+                    # grab all iterated ordinals (e.g. 1st, 3rd and 4th of november)
                     while index + 1 < len(tokens) and tokens[index + 1].type_ == 'ordinal':
                         ords.append(get_ordinal_index(tokens[index + 1].text))
                         index += 1

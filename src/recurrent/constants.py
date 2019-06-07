@@ -78,12 +78,6 @@ RE_DAILY = re.compile(r'daily|everyday')
 RE_RECURRING_UNIT = re.compile(r'weekly|monthly|yearly')
 
 # getters
-def get_number(s):
-    try:
-        return int(s)
-    except ValueError:
-        return numbers.index(s)
-
 def get_ordinal_index(s):
     try:
         return int(s[:-2])
@@ -111,4 +105,3 @@ def get_unit_freq(s):
         if unit in s:
             return units_freq[i]
     raise ValueError
-
