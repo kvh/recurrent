@@ -296,7 +296,7 @@ class RecurringEvent(object):
                 # a plural weekday can really only mean one
                 # of two things, weekly or biweekly
                 self.freq = 'weekly'
-                if 'bi' in s or 'every other' in s:
+                if 'bi' in s or 'every other' in s or 'every alternate' in s:
                     self.interval = 2
                 else:
                     self.interval = 1
@@ -308,7 +308,7 @@ class RecurringEvent(object):
 
         # recurring phrases
         if 'every' in types or 'recurring_unit' in types:
-            if 'every other' in s:
+            if 'every other' in s or 'every alternate' in s:
                 self.interval = 2
             else:
                 self.interval = 1
