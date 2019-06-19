@@ -3,6 +3,7 @@ from datetime import datetime
 import logging
 from parsedatetime import Calendar
 from os import environ
+from time import tzset
 
 from recurrent.constants import *
 
@@ -111,8 +112,9 @@ class Tokenizer(list):
 
 
 class RecurringEvent(object):
-    def __init__(self, now_date=datetime.now()):
-        self.now_date = now_date
+    def __init__(self, now_date=None):
+        if now_date == None:
+            self.now_date = datetime.now()
         self._reset()
 
     def _reset(self):
@@ -183,6 +185,7 @@ class RecurringEvent(object):
         # if it is a non-recurring date, and none if it is neither.
         self._reset()
         environ['TZ'] = zone # set timezone
+        tzset()
         if not s:
             return False
         event = self.parse_start_and_end(s)
