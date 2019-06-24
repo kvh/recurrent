@@ -113,8 +113,8 @@ class Tokenizer(list):
 
 class RecurringEvent(object):
     def __init__(self, now_date=None):
-        if now_date == None:
-            self.now_date = datetime.now()
+        if now_date == None: self.now_date = datetime.now()
+        else: self.now_date = now_date
         self._reset()
 
     def _reset(self):
