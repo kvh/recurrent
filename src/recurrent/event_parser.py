@@ -2,8 +2,7 @@ import re
 from datetime import datetime
 import logging
 from parsedatetime import Calendar
-from os import environ
-from time import tzset
+from pytz import timezone, utc
 
 from recurrent.constants import *
 
@@ -137,6 +136,8 @@ class RecurringEvent(object):
         self.bysetpos = None
         self.byweekno = None
 
+        self.zone = 'Etc/UTC'
+
     def get_params(self):
         params = {}
         # we shouldnt have weekdays and ordinal weekdays but if we do ordinal weekdays
@@ -180,12 +181,16 @@ class RecurringEvent(object):
                 rules.append( '%s=%s' % (k.upper(), v))
         return rrule + ';'.join(rules)
 
-    def parse(self, s, zone='Etc/UTC'):
+    def make_timezone_aware(self, utctime):
+        utctime = utctime.replace(tzinfo=utc)
+        return utctime.astimezone(timezone(self.zone))
+
+    def parse(self, s, zone=None):
         # returns a rrule string if it is a recurring date, a datetime
         # if it is a non-recurring date, and none if it is neither.
         self._reset()
-        environ['TZ'] = zone # set timezone
-        tzset()
+        if zone:
+            self.zone = zone
         if not s:
             return False
         event = self.parse_start_and_end(s)
@@ -209,11 +214,11 @@ class RecurringEvent(object):
         date = self.parse_date(s)
         if date is not None:
             date, found = self.parse_time(s, date)
-            return date
+            return self.make_timezone_aware(date)
         # maybe we have a simple time expression
         date, found = self.parse_time(s, self.now_date)
         if found:
-            return date
+            return self.make_timezone_aware(date)
         return None
 
     def parse_time(self, s, dt):
@@ -268,6 +273,7 @@ class RecurringEvent(object):
         if result:
             log.debug( "parsed date string '%s' to %s" %(date_string,
                     timestruct[:6]))
+
             return datetime(*timestruct[:6])
         return None
 
