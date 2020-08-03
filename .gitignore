@@ -2,3 +2,5 @@
 .DS_Store
 dist
 build
+*.*~
+.pytest_cache

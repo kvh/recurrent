@@ -36,8 +36,8 @@ MoYs = (
 RE_MOYS = [re.compile(r + '$') for r in MoYs]
 RE_MOY = re.compile('(' + ')$|('.join(MoYs) + ')$')
 
-units = ['day', 'week', 'month', 'year', 'hour', 'minute', 'seconds']
-units_freq = ['daily', 'weekly', 'monthly', 'yearly', 'hourly', 'minutely', 'secondly']
+units = ['day', 'week', 'month', 'year', 'hour', 'minute', 'min', 'sec', 'seconds'] # Issue #3
+units_freq = ['daily', 'weekly', 'monthly', 'yearly', 'hourly', 'minutely', 'minutely', 'secondly', 'secondly'] # Issue #3
 RE_UNITS = re.compile(r'^(' + 's?|'.join(units) + '?)$')
 
 ordinals = (
@@ -51,6 +51,7 @@ ordinals = (
     r'eighth',
     r'ninth',
     r'tenth',
+    r'last',        # Issue #18
     )
 RE_ORDINALS = [re.compile(r + '$') for r in ordinals]
 RE_ORDINAL = re.compile(r'\d+(st|nd|rd|th)$|' + '$|'.join(ordinals))
@@ -68,7 +69,7 @@ numbers = (
     r'ten',
     )
 RE_NUMBERS = [re.compile(r + '$') for r in numbers]
-RE_NUMBER = re.compile('(' + '|'.join(numbers) + ')$|(\d+)$')
+RE_NUMBER = re.compile('(' + '|'.join(numbers) + r')$|(\d+)$')
 
 RE_EVERY = re.compile(r'(every|each|once)$')
 
@@ -91,6 +92,8 @@ def get_ordinal_index(s):
         pass
     for i, reg in enumerate(RE_ORDINALS):
         if reg.match(s):
+            if i == 10:         # Issue #18
+                return -1       # Issue #18
             return i + 1
     raise ValueError
 
