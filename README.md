@@ -55,13 +55,7 @@ datetime.datetime(2010, 1, 26, 0, 0)
 ```
 
 ## Dependencies
-Recurrent uses [parsedatetime][3] to parse dates. If you grab the pypi
-version of parsedatetime though, some tests in recurrent will fail due
-to a bug with manually setting the "now" time. For some use cases this won't be an
-issue, but if you need this functionality before it's patched you can grab
-[my fork][4] of parsedatetime.
-
-Take a look at the tests for more.
+Recurrent uses [parsedatetime][3] to parse dates.
 
 ## Things it can't do
 
@@ -77,5 +71,5 @@ Ken Van Haren kvh@science.io [@squaredloss](http://twitter.com/squaredloss)
 
 [1]: http://www.kanzaki.com/docs/ical/rrule.html
 [2]: http://labix.org/python-dateutil
-[3]: http://code.google.com/p/parsedatetime
+[3]: https://github.com/bear/parsedatetime
 [4]: https://github.com/kvh/parsedatetime

@@ -33,9 +33,19 @@ expressions = [
         ('once a week on sunday', dict(freq='weekly', interval=1, byday='SU')),
         ('every 3 weeks on mon', dict(freq='weekly', interval=3, byday='MO')),
         ('every 3 days', dict(freq='daily', interval=3)),
+        ('every 2nd of the month', dict(freq='monthly', interval=1, bymonthday='2')),           # Issue #16
         ('every 4th of the month', dict(freq='monthly', interval=1, bymonthday='4')),
         ('every 4th and 10th of the month', dict(freq='monthly', interval=1, bymonthday='4,10')),
         ('every first friday of the month', dict(freq='monthly', interval=1, byday='1FR')),
+        ('every last friday of the month', dict(freq='monthly', interval=1, byday='-1FR')),     # Issue #18
+        ('2nd to the last friday of each month', dict(freq='monthly', interval=1, byday='-2FR')),   # Issue #18
+        ('first day of each month', dict(freq='monthly', interval=1, bymonthday='1')),          # Issue #18
+        ('first of each month', dict(freq='monthly', interval=1, bymonthday='1')),
+        ('last of each month', dict(freq='monthly', interval=1, bymonthday='-1')),              # Issue #18
+        ('2nd to the last of each month', dict(freq='monthly', interval=1, bymonthday='-2')),   # Issue #18
+        ('last day of each month', dict(freq='monthly', interval=1, bymonthday='-1')),          # Issue #18
+        ('2nd friday of each month', dict(freq='monthly', interval=1, byday='2FR')),       # Issue #16
+        ('second friday of each month', dict(freq='monthly', interval=1, byday='2FR')),    # Issue #16
         ('first friday of every month', dict(freq='monthly', interval=1, byday='1FR')),
         ('first friday of each month', dict(freq='monthly', interval=1, byday='1FR')),
         ('first and third friday of each month', dict(freq='monthly', interval=1, byday='1FR,3FR')),
@@ -43,6 +53,7 @@ expressions = [
         ('every year on the fourth thursday in november', dict(freq='yearly', interval=1,byday='4TH', bymonth='11')),
         ('once a year on december 25th', dict(freq='yearly', interval=1, bymonthday='25', bymonth='12')),
         ('every july 4th', dict(freq='yearly', interval=1, bymonthday='4', bymonth='7')),
+        ('every aug 30', dict(freq='yearly', interval=1, bymonthday='30', bymonth='8')),        # Issue #15
 
         # with start and end dates
         ('daily starting march 3rd',
@@ -65,14 +76,29 @@ expressions = [
 
         # time recurrences
         ('every 5 minutes', dict(freq='minutely', interval=5)),
+        ('every 1 second', dict(freq='secondly', interval=1)),      # Issue #16
+        ('every second', dict(freq='secondly', interval=1)),        # Issue #16
         ('every 30 seconds', dict(freq='secondly', interval=30)),
+        ('every 90 secs', dict(freq='secondly', interval=90)),
         ('every other hour', dict(freq='hourly', interval=2)),
         ('every 2 hours', dict(freq='hourly', interval=2)),
-        ('every 20 min', ExpectedFailure(dict(freq='minutely', interval=20))),
+        ('every 20 min', dict(freq='minutely', interval=20)),   # Issue #3
+        ('every 45 mins', dict(freq='minutely', interval=45)),  # Issue #3
 
         # with times
+        ('daily at 12am', dict(freq='daily', interval=1, byhour='0', byminute='0')),   # Issue #14
+        ('daily at 12a', dict(freq='daily', interval=1, byhour='0', byminute='0')),    # Issue #14
+        ('daily at 3am', dict(freq='daily', interval=1, byhour='3', byminute='0')),
+        ('daily at 3:00am', dict(freq='daily', interval=1, byhour='3', byminute='0')),  # Issue #17
+        ('daily at 3:01am', dict(freq='daily', interval=1, byhour='3', byminute='1')),  # Issue #17
+        ('daily at 12pm', dict(freq='daily', interval=1, byhour='12', byminute='0')),   # Issue #14
+        ('daily at 12p', dict(freq='daily', interval=1, byhour='12', byminute='0')),    # Issue #14
         ('daily at 3pm', dict(freq='daily', interval=1, byhour='15', byminute='0')),
-        ('daily at 3:00pm', dict(freq='daily', interval=1, byhour='15', byminute='0')),
+        ('daily at 3 pm', dict(freq='daily', interval=1, byhour='15', byminute='0')),   # Issue #13
+        ('daily at 3p', dict(freq='daily', interval=1, byhour='15', byminute='0')),     # Issue #14
+        ('daily at 3:00pm', dict(freq='daily', interval=1, byhour='15', byminute='0')), # Issue #17
+        ('daily at 3:01pm', dict(freq='daily', interval=1, byhour='15', byminute='1')), # Issue #17
+        ('at 10 am on 15th of every month', dict(freq='monthly', interval=1, byhour='10', byminute='0', bymonthday='15')), # Issue #13
 
         # TODO
         #('saturday through tuesday', dict(freq='daily', interval=1, byday='SA,SU,MO,TU')),
@@ -88,14 +114,26 @@ expressions = [
             (NOW + datetime.timedelta(days=(6 -
                                 NOW.weekday())%7)).date()),
 
-        # pdt fucks this up, does feb 18 first, then adjusts thurs
+        # This works now:
         ('thursday, february 18th',
-                ExpectedFailure(datetime.datetime(NOW.year, 2, 18).date())),
+                datetime.datetime(NOW.year, 2, 18).date()),
 
         ]
 
 time_expressions = [
         ('march 3rd at 12:15am', datetime.datetime(NOW.year, 3, 3, 0, 15)),
+        ('8/1/2100 at 12:15am', datetime.datetime(2100, 8, 1, 0, 15)),  # Issue #17
+        ('8/1/2100 at 1am', datetime.datetime(2100, 8, 1, 1, 0)),   # Issue #17
+        ('8/1/2100 at 1:01', datetime.datetime(2100, 8, 1, 13, 1)),  # Issue #17
+        ('8/1/2100 at 1:02am', datetime.datetime(2100, 8, 1, 1, 2)),    # Issue #17
+        ('8/1/2100 at 12pm', datetime.datetime(2100, 8, 1, 12, 0)), # Issue #17
+        ('8/1/2100 at 12p', datetime.datetime(2100, 8, 1, 12, 0)), # Issue #17, #14
+        ('8/1/2100 at 1 pm', datetime.datetime(2100, 8, 1, 13, 0)),  # Issue #17
+        ('at 1 pm on 8/1/2100', datetime.datetime(2100, 8, 1, 13, 0)),  # Issue #17
+        ('1pm on 8/1/2100', datetime.datetime(2100, 8, 1, 13, 0)),  # Issue #17
+        ('1 pm on 8/1/2100', datetime.datetime(2100, 8, 1, 13, 0)),  # Issue #17
+        ('8/1/2100 at 1:01pm', datetime.datetime(2100, 8, 1, 13, 1)),   # Issue #17
+        ('8/1/2100 at 2:01pm', datetime.datetime(2100, 8, 1, 14, 1)),   # Issue #17
         ('tomorrow at 3:30', datetime.datetime(NOW.year, NOW.month, NOW.day +
             1, 15, 30)),
         ('in 30 minutes', NOW.replace(minute=NOW.minute + 30)),
@@ -121,10 +159,17 @@ non_dt_expressions = (
         ('Every time i hear that i apreciate it.', None),
         ('Once every ones in', None),
 
-        ('first time for everything. wait a minute', None),
+        # 'wait a minute' is properly parsed ('first time for everything. wait a minute', None),
         # Failing. parses as may
         ('may this test pass.', ExpectedFailure(None)),
         ('seconds anyone?', None),
+        )
+
+extra_expressions = (   # We test these exactly, not in phrases
+        ('1 oclock on 8/1/2100', datetime.datetime(2100, 8, 1, 13, 0)),  # Issue #17
+        ('10:00 on the 15th of every month', dict(freq='monthly', interval=1, byhour='10', byminute='0', bymonthday='15')), # Issue #13
+        ('10am on the 15th of every month', dict(freq='monthly', interval=1, byhour='10', byminute='0', bymonthday='15')), # Issue #13
+        ('10 am on the 15th of every month', dict(freq='monthly', interval=1, byhour='10', byminute='0', bymonthday='15')), # Issue #13
         )
 
 embedded_expressions = [('im available ' + s, v) for s,v in expressions] + [
@@ -133,6 +178,7 @@ embedded_expressions = [('im available ' + s, v) for s,v in expressions] + [
 
 expressions += embedded_expressions
 expressions += non_dt_expressions
+expressions += extra_expressions        # Issue #13
 
 
 class ParseTest(unittest.TestCase):
@@ -165,11 +211,12 @@ class ParseTest(unittest.TestCase):
         string = 'every day starting feb 2'
         date = RecurringEvent(NOW)
         date.parse(string)
-        expected = """DTSTART:20100202\nRRULE:FREQ=DAILY;INTERVAL=1"""
-        self.assertEqual(expected, date.get_RFC_rrule())
+        expected1 = """DTSTART:20100202\nRRULE:FREQ=DAILY;INTERVAL=1"""
+        expected2 = """DTSTART:20100202\nRRULE:INTERVAL=1;FREQ=DAILY"""
+        self.assertIn(date.get_RFC_rrule(), [expected1, expected2])
 
 
-def test_expression(string, expected):
+def tst_expression(string, expected):
     def test_(self):
         date = RecurringEvent(NOW)
         val = date.parse(string)
@@ -216,7 +263,7 @@ def test_expression(string, expected):
 # add a test for each expression
 for i, expr in enumerate(expressions):
     string, params = expr
-    setattr(ParseTest, 'test_%03d_%s' % (i, string.replace(' ', '_')), test_expression(string, params))
+    setattr(ParseTest, 'test_%03d_%s' % (i, string.replace(' ', '_')), tst_expression(string, params))
 
 
 if __name__ == '__main__':
