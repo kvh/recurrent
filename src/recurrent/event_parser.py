@@ -12,7 +12,7 @@ pdt = parsedatetime.Calendar()
 
 from recurrent.constants import *
 
-DEBUG=True
+DEBUG=False
 
 log = logging.getLogger('recurrent')
 if DEBUG:
