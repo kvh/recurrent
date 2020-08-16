@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
-version = '0.3.0'
+version = '0.4.0'
 
 setup(name='recurrent',
       version=version,
-      description="Natural language parsing of recurring events",
+      description="Natural language parsing and deparsing of recurring events",
       long_description="See http://github.com/kvh/recurrent",
       classifiers=[
           'Natural Language :: English',
@@ -21,5 +21,6 @@ setup(name='recurrent',
       zip_safe=False,
       install_requires=[
           'parsedatetime',
-      ]
+      ],
+      python_requires='>3.6.0',
       )
