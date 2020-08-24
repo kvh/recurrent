@@ -1,5 +1,5 @@
 # Recurrent
-Recurrent is a python library for natural language parsing and deparsing of dates and recurring
+Recurrent is a python library for natural language parsing and formatting of dates and recurring
 events. It turns strings like "every tuesday and thurs until next month"
 into [RFC-compliant RRULES][1], to be fed into a calendar api or [python-dateutil's][2]
 rrulestr.  It will also accept such rrules and return a natural language representation of them.
