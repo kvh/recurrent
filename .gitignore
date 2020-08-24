@@ -5,3 +5,4 @@ build
 *.*~
 .pytest_cache
 htmlcov
+*.swp
