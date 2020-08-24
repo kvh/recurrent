@@ -63,9 +63,9 @@ datetime.datetime(2010, 2, 2, 0, 0)
 
 >>> r.parse('not a date at all')
 
->>> r.deparse('DTSTART:20100105\nRRULE:FREQ=DAILY;INTERVAL=1;UNTIL=20100201')
+>>> r.format('DTSTART:20100105\nRRULE:FREQ=DAILY;INTERVAL=1;UNTIL=20100201')
 'daily from Tue Jan 5, 2010 to Mon Feb 1, 2010'
->>> r.deparse(r.parse('fridays twice'))
+>>> r.format(r.parse('fridays twice'))
 'every Fri twice'
 >>>
 ```
@@ -90,8 +90,9 @@ Recurrent is regrettably quite U.S. (and completely english) centric. Contributi
 ## Credits
 Recurrent is inspired by the similar Ruby library Tickle by Joshua
 Lippiner. It also uses the parsedatetime library for fuzzy human date
-parsing.  The handling of COUNT and EXDATE and the deparse function was
-supplied by Joe Cool snoopyjc@gmail.com https://github.com/snoopyjc
+parsing.  The handling of COUNT, BYSETPOS, BYWEEKNO, EXDATE and EXRULE,
+and the format function was supplied by Joe Cool snoopyjc@gmail.com 
+https://github.com/snoopyjc
 
 ## Author
 Ken Van Haren kvh@science.io [@squaredloss](http://twitter.com/squaredloss)

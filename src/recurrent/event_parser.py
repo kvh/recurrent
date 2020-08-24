@@ -833,7 +833,7 @@ class RecurringEvent(object):
         return hr
 
 
-    def deparse(self, rrule_or_datetime):
+    def format(self, rrule_or_datetime):
         """Convert a rrule, rrulestr, or datetime back to the appropriate English representation"""
         if rrule_or_datetime is None:
             return None
@@ -1050,14 +1050,14 @@ class RecurringEvent(object):
 
                 if start is not None and start != now and start != adj_now and starting_needed():
                     if end is not None:
-                        result += ' from ' + self.deparse(start)
-                        result += ' to ' + self.deparse(end)
+                        result += ' from ' + self.format(start)
+                        result += ' to ' + self.format(end)
                         end = None
                         count = None
                     else:
-                        result += ' starting ' + self.deparse(start)
+                        result += ' starting ' + self.format(start)
                 if end is not None:
-                    result += ' until ' + self.deparse(end)
+                    result += ' until ' + self.format(end)
                 elif count is not None:
                     if count == 2:
                         result += ' twice'
@@ -1089,7 +1089,7 @@ class RecurringEvent(object):
             def add_excepts(pr):
                 exrule = pr.get('EXRULE')
                 if exrule:
-                    exc = self.deparse(dict(RRULE=exrule))
+                    exc = self.format(dict(RRULE=exrule))
                     return ' except ' + exc
                 exdates = pr.get('EXDATE')
                 if not exdates:
@@ -1098,7 +1098,7 @@ class RecurringEvent(object):
                     squash = squash_except_months(exdates)
                     if squash:
                         return ' except in ' + ' and '.join(squash)
-                return ' except on ' + list_handler(self.deparse, exdates)
+                return ' except on ' + list_handler(self.format, exdates)
 
             def add_bysetpos(rr, add=' '):
                 bysetpos = rr.get('BYSETPOS')
@@ -1194,9 +1194,9 @@ class RecurringEvent(object):
                 """
                 return every_fr_interval_name(fr, interval) + add_bysetpos(rr) + add_suffix(pr)
             else: 
-                log.debug(f'deparse({rrule_or_datetime}): Case not handled!')
+                log.debug(f'format({rrule_or_datetime}): Case not handled!')
         except Exception as e:
-            log.debug(f'deparse({rrule_or_datetime}): Exception {e}')
+            log.debug(f'format({rrule_or_datetime}): Exception {e}')
             #traceback.print_exc()
 
         return rrule_or_datetime

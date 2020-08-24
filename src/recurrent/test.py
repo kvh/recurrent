@@ -4,7 +4,7 @@ from dateutil import rrule
 
 from recurrent.event_parser import RecurringEvent
 from recurrent import parse as rparse
-from recurrent import deparse as rdeparse
+from recurrent import format as rformat
 
 NOW = datetime.datetime(2010, 1, 1)
 TOMORROW = (NOW+datetime.timedelta(days=1))
@@ -14,7 +14,7 @@ class ExpectedFailure(object):
     def __init__(self, v):
         self.correct_value = v
 
-# Expressions consist of the string to feed to parse, the expected result dict, and optionally the expected deparse result (default = string)
+# Expressions consist of the string to feed to parse, the expected result dict, and optionally the expected format result (default = string)
 expressions = [
         # recurring events
         ('daily', dict(freq='daily', interval=1)),
@@ -469,31 +469,31 @@ class ParseTest(unittest.TestCase):
         expected2="""RRULE:INTERVAL=1;FREQ=DAILY;UNTIL=20110201"""
         self.assertIn(date.get_RFC_rrule(), [expected1, expected2])
 
-    def test_deparse_errors(self):
+    def test_format_errors(self):
         date = RecurringEvent()
-        self.assertIs(date.deparse(None), None)
-        self.assertEqual(date.deparse(''), '')
-        self.assertEqual(date.deparse('abc'), 'abc')    # No RRULE
-        self.assertEqual(date.deparse('RRULE:INTERVAL=1'), 'RRULE:INTERVAL=1')  # No FREQ
-        self.assertEqual(date.deparse('RRULE:FREQ=WEEKLY'), 'RRULE:FREQ=WEEKLY')  # No BYDAY
-        self.assertEqual(date.deparse('RRULE:FREQ=WEEKLY;BYDAY=XX'), 'RRULE:FREQ=WEEKLY;BYDAY=XX')  # Bad BYDAY
-        self.assertEqual(date.deparse('RRULE:FREQ=MONTHLY'), 'RRULE:FREQ=MONTHLY')  # No BYMONTHDAY or BYDAY
-        self.assertEqual(date.deparse('RRULE:FREQ=YEARLY'), 'RRULE:FREQ=YEARLY')  # No BYMONTHDAY or BYDAY or BYMONTH
-        self.assertEqual(date.deparse('RRULE:FREQ=BADLY'), 'RRULE:FREQ=BADLY')
+        self.assertIs(date.format(None), None)
+        self.assertEqual(date.format(''), '')
+        self.assertEqual(date.format('abc'), 'abc')    # No RRULE
+        self.assertEqual(date.format('RRULE:INTERVAL=1'), 'RRULE:INTERVAL=1')  # No FREQ
+        self.assertEqual(date.format('RRULE:FREQ=WEEKLY'), 'RRULE:FREQ=WEEKLY')  # No BYDAY
+        self.assertEqual(date.format('RRULE:FREQ=WEEKLY;BYDAY=XX'), 'RRULE:FREQ=WEEKLY;BYDAY=XX')  # Bad BYDAY
+        self.assertEqual(date.format('RRULE:FREQ=MONTHLY'), 'RRULE:FREQ=MONTHLY')  # No BYMONTHDAY or BYDAY
+        self.assertEqual(date.format('RRULE:FREQ=YEARLY'), 'RRULE:FREQ=YEARLY')  # No BYMONTHDAY or BYDAY or BYMONTH
+        self.assertEqual(date.format('RRULE:FREQ=BADLY'), 'RRULE:FREQ=BADLY')
 
-    def test_deparse_plus(self):
+    def test_format_plus(self):
         date = RecurringEvent()
-        self.assertEqual(date.deparse('RRULE:INTERVAL=1;FREQ=MONTHLY;BYDAY=+1FR'), '1st Fri of every month')
-        self.assertEqual(date.deparse(datetime.datetime(2000,1,2,3,4,5)), 'Sun Jan 2, 2000 3:04:05am')
+        self.assertEqual(date.format('RRULE:INTERVAL=1;FREQ=MONTHLY;BYDAY=+1FR'), '1st Fri of every month')
+        self.assertEqual(date.format(datetime.datetime(2000,1,2,3,4,5)), 'Sun Jan 2, 2000 3:04:05am')
 
     def test_high_level(self):
-        self.assertEqual(rdeparse(rparse('daily')), 'daily')
+        self.assertEqual(rformat(rparse('daily')), 'daily')
 
 def tst_expression(string, expected, de):
     def test_(self):
         date = RecurringEvent(NOW)
         val = date.parse(string)
-        back_again = date.deparse(val)
+        back_again = date.format(val)
         expected_params = expected
         known_failure = False
         if isinstance(expected, ExpectedFailure):
@@ -536,7 +536,7 @@ def tst_expression(string, expected, de):
         if de is not None:
             self.assertEqual(de, back_again)
             if back_again is not None and back_again != string:
-                self.assertEqual(back_again, date.deparse(date.parse(back_again)))   # Run it thru again!
+                self.assertEqual(back_again, date.format(date.parse(back_again)))   # Run it thru again!
     return test_
 
 # add a test for each expression
