@@ -95,7 +95,7 @@ and the format function was supplied by Joe Cool snoopyjc@gmail.com
 https://github.com/snoopyjc
 
 ## Author
-Ken Van Haren kvh@science.io [@squaredloss](http://twitter.com/squaredloss)
+Ken Van Haren [@squaredloss](http://twitter.com/squaredloss)
 
 [1]: http://www.kanzaki.com/docs/ical/rrule.html
 [2]: https://pypi.org/project/python-dateutil
