@@ -18,6 +18,10 @@ RE_DOW = re.compile('(' + ')|('.join(DoWs) + ')')
 RE_PLURAL_WEEKDAY = re.compile('weekdays|weekends|%s'%RE_PLURAL_DOW.pattern)
 weekday_codes = [ 'MO','TU','WE','TH','FR', 'SA', 'SU', 'MO,TU,WE,TH,FR',
 'SA,SU']
+ordered_weekday_codes = ('', 'SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA')
+next_day = dict(MO='TU', TU='WE', WE='TH', TH='FR', FR='SA', SA='SU', SU='MO')
+day_names = dict(MO='Mon', TU='Tue', WE='Wed', TH='Thu', FR='Fri', SA='Sat', SU='Sun')
+plural_day_names = dict(MO='Mondays', TU='Tuesdays', WE='Wednesdays', TH='Thursdays', FR='Fridays', SA='Saturdays', SU='Sundays')
 
 MoYs = (
     r'jan(uary)?',
@@ -35,6 +39,7 @@ MoYs = (
 )
 RE_MOYS = [re.compile(r + '$') for r in MoYs]
 RE_MOY = re.compile('(' + ')$|('.join(MoYs) + ')$')
+RE_MOY_NOT_ANCHORED = re.compile('(' + ')|('.join(MoYs) + ')')
 
 units = ['day', 'week', 'month', 'year', 'hour', 'minute', 'min', 'sec', 'seconds'] # Issue #3
 units_freq = ['daily', 'weekly', 'monthly', 'yearly', 'hourly', 'minutely', 'minutely', 'secondly', 'secondly'] # Issue #3
@@ -55,6 +60,7 @@ ordinals = (
     )
 RE_ORDINALS = [re.compile(r + '$') for r in ordinals]
 RE_ORDINAL = re.compile(r'\d+(st|nd|rd|th)$|' + '$|'.join(ordinals))
+RE_ORDINAL_NOT_ANCHORED = re.compile(r'\d+(st|nd|rd|th)|' + '|'.join(ordinals))
 numbers = (
     r'zero',
     r'one',
@@ -70,6 +76,7 @@ numbers = (
     )
 RE_NUMBERS = [re.compile(r + '$') for r in numbers]
 RE_NUMBER = re.compile('(' + '|'.join(numbers) + r')$|(\d+)$')
+RE_NUMBER_NOT_ANCHORED = re.compile('(' + '|'.join(numbers) + r')|(\d+)')
 
 RE_EVERY = re.compile(r'(every|each|once)$')
 
@@ -90,28 +97,29 @@ def get_ordinal_index(s):
         return int(s[:-2])
     except ValueError:
         pass
+    sign = -1 if s[0] == '-' else 1     # Issue #18
     for i, reg in enumerate(RE_ORDINALS):
         if reg.match(s):
             if i == 10:         # Issue #18
                 return -1       # Issue #18
-            return i + 1
-    raise ValueError
+            return sign * (i + 1)   # Issue #18
+    raise ValueError        # pragma nocover
 
 def get_DoW(s):
     for i, dow in enumerate(RE_DOWS):
         if dow.search(s):
             return weekday_codes[i].split(',')
-    raise ValueError
+    raise ValueError        # pragma nocover
 
 def get_MoY(s):
     for i, moy in enumerate(RE_MOYS):
         if moy.search(s):
             return i + 1
-    raise ValueError
+    raise ValueError        # pragma nocover
 
 def get_unit_freq(s):
     for i, unit in enumerate(units):
         if unit in s:
             return units_freq[i]
-    raise ValueError
+    raise ValueError        # pragma nocover
 
