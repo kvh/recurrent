@@ -827,8 +827,10 @@ class RecurringEvent(object):
                 return 0
             return hr
         if hr > 12: return hr
+        if hr == 0: return 0 # ignore preferred_time_range when 0, 0 is never 12:00
         if hr < self.preferred_time_range[0]:
             return hr + 12
+
         return hr
 
 
