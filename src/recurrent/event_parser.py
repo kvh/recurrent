@@ -10,8 +10,6 @@ try:
 except ImportError:     # pragma nocover
     import parsedatetime
 
-pdt = parsedatetime.Calendar()
-
 from recurrent.constants import *
 
 DEBUG=False
@@ -140,13 +138,14 @@ class Tokenizer(list):
         log.debug("tokenized '%s'\n%s" %(self.text, self))
 
 class RecurringEvent(object):
-    def __init__(self, now_date=None, preferred_time_range=(8, 19)):
+    def __init__(self, now_date=None, preferred_time_range=(8, 19), parse_constants: parsedatetime.Constants=None):
         if now_date is None:
             now_date = datetime.datetime.now()
         if isinstance(now_date, datetime.date) and not isinstance(now_date, datetime.datetime):
             now_date = datetime.datetime(now_date.year, now_date.month, now_date.day)
         self.now_date = now_date
         self.preferred_time_range = preferred_time_range
+        self.pdt = parsedatetime.Calendar(constants=parse_constants)
         self._reset()
 
     def _reset(self):
@@ -500,7 +499,7 @@ class RecurringEvent(object):
         if result:
             log.debug(f"parsed date string '{date_string}' to {result}")
             return result
-        timestruct, result = pdt.parse(date_string, self.now_date)
+        timestruct, result = self.pdt.parse(date_string, self.now_date)
         if result:
             log.debug( "parsed date string '%s' to %s" %(date_string,
                     timestruct[:6]))
