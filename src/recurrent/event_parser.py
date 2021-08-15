@@ -64,7 +64,7 @@ def normalize(s):
     s = re.sub(RE_LONG_DATE_START, r'\1 \2', s) # Remove commas in long format dates, e.g. "Tuesday, January..."
     s = re.sub(r',\s*and', ' and', s)       # Remove commas before 'and'
     s = re.sub(r',', ' and ', s)            # Change all other commas to ' and '
-    s = re.sub(r'[^\w\s/:-]', '', s)
+    s = re.sub(r'[^\w\s\./:-]', '', s)      # Allow . for international formatting
     s = re.sub(r'\s+', ' ', s)
     return s
 
