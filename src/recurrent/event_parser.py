@@ -147,6 +147,11 @@ class RecurringEvent(object):
         self.preferred_time_range = preferred_time_range
         self.pdt = parsedatetime.Calendar(constants=parse_constants)
         self._reset()
+        
+        if parse_constants and parse_constants.use24:
+            # the 24hr clock will always have this preferred time
+            # will not break pm specification
+            preferred_time_range = (0,12)
 
     def _reset(self):
         # rrule params
