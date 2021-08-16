@@ -10,8 +10,6 @@ try:
 except ImportError:     # pragma nocover
     import parsedatetime
 
-pdt = parsedatetime.Calendar()
-
 from recurrent.constants import *
 
 DEBUG=False
@@ -66,7 +64,7 @@ def normalize(s):
     s = re.sub(RE_LONG_DATE_START, r'\1 \2', s) # Remove commas in long format dates, e.g. "Tuesday, January..."
     s = re.sub(r',\s*and', ' and', s)       # Remove commas before 'and'
     s = re.sub(r',', ' and ', s)            # Change all other commas to ' and '
-    s = re.sub(r'[^\w\s/:-]', '', s)
+    s = re.sub(r'[^\w\s\./:-]', '', s)      # Allow . for international formatting
     s = re.sub(r'\s+', ' ', s)
     return s
 
@@ -140,14 +138,20 @@ class Tokenizer(list):
         log.debug("tokenized '%s'\n%s" %(self.text, self))
 
 class RecurringEvent(object):
-    def __init__(self, now_date=None, preferred_time_range=(8, 19)):
+    def __init__(self, now_date=None, preferred_time_range=(8, 19), parse_constants: parsedatetime.Constants=None):
         if now_date is None:
             now_date = datetime.datetime.now()
         if isinstance(now_date, datetime.date) and not isinstance(now_date, datetime.datetime):
             now_date = datetime.datetime(now_date.year, now_date.month, now_date.day)
         self.now_date = now_date
         self.preferred_time_range = preferred_time_range
+        self.pdt = parsedatetime.Calendar(constants=parse_constants)
         self._reset()
+        
+        if parse_constants and parse_constants.use24:
+            # the 24hr clock will always have this preferred time
+            # will not break pm specification
+            preferred_time_range = (0,12)
 
     def _reset(self):
         # rrule params
@@ -500,7 +504,7 @@ class RecurringEvent(object):
         if result:
             log.debug(f"parsed date string '{date_string}' to {result}")
             return result
-        timestruct, result = pdt.parse(date_string, self.now_date)
+        timestruct, result = self.pdt.parse(date_string, self.now_date)
         if result:
             log.debug( "parsed date string '%s' to %s" %(date_string,
                     timestruct[:6]))
@@ -828,8 +832,10 @@ class RecurringEvent(object):
                 return 0
             return hr
         if hr > 12: return hr
+        if hr == 0: return 0 # ignore preferred_time_range when 0, 0 is never 12:00
         if hr < self.preferred_time_range[0]:
             return hr + 12
+
         return hr
 
 

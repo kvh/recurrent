@@ -80,6 +80,14 @@ datetime.datetime(2010, 1, 5, 0, 0)
 datetime.datetime(2010, 1, 26, 0, 0)
 ```
 
+You can specify a (custom) localisation to change the parsing behaviour of `parsedatetime`
+```python
+consts = parsedatetime.Constants(localeID='en_US', usePyICU=False)
+consts.use24 = True
+
+r = RecurringEvent(now_date=datetime.datetime(2010, 1, 1), parse_constants=consts)
+```
+
 ## Dependencies
 Recurrent uses [parsedatetime][3] to parse dates and [python.dateutil][2] if available to optimize some results.
 
